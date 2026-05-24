@@ -68,19 +68,25 @@ if user_id != previous_user_id:
     st.session_state.messages = []
     st.session_state.previous_user_id = user_id
 
-# Sidebar option to show memory
+# --- 侧边栏：查看记忆按钮 ---
 st.sidebar.title("Memory Info")
-if st.button("View My Memory"):
-    memories = memory.get_all(filters={"user_id": user_id})
-    if memories and "results" in memories:
-        st.write(f"Memory history for **{user_id}**:")
-        for mem in memories["results"]:
-            if "memory" in mem:
-                st.write(f"- {mem['memory']}")
+# 1. 把按钮放到侧边栏
+if st.sidebar.button("View My Memory"):
+    # 2. 只有点击了按钮，才去判断有没有填用户名
+    if user_id: 
+        memories = memory.get_all(filters={"user_id": user_id})
+        # 3. 安全提取记忆结果
+        if memories and "results" in memories and len(memories["results"]) > 0:
+            st.sidebar.write(f"Memory history for **{user_id}**:")
+            for mem in memories["results"]:
+                if "memory" in mem:
+                    # 用 success 的绿色框展示记忆，视觉效果更好
+                    st.sidebar.success(f"- {mem['memory']}")
+        else:
+            st.sidebar.info("当前用户还没有任何记忆数据。快去聊点什么吧！")
     else:
-        st.sidebar.info("No learning history found for this user ID.")
-else:
-    st.sidebar.error("Please enter a username to view memory info.")
+        # 如果没填用户名就瞎点按钮，才给红色报错
+        st.sidebar.error("请先在上方输入用户名！")
 
 # Initialize the chat history
 if "messages" not in st.session_state:
@@ -92,7 +98,7 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 # Accept user input
-prompt = st.chat_input("Where would you like to travel?")
+prompt = st.chat_input("世界很大，你想去哪里旅游呢？")  # <--- 把提示语改成更有旅行氛围的版本
 
 if prompt and user_id:
     # Add user message to chat history
