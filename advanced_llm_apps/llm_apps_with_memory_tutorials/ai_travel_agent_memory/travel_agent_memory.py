@@ -25,9 +25,8 @@ client = OpenAI(
     base_url=os.environ["OPENAI_API_BASE"]
 )
 
-# ==========================================
-# 核心魔改 3：不仅要改向量数据库 IP，还要告诉 Mem0 用 DeepSeek 模型提取记忆
-# ==========================================
+
+# 终极混合架构：云端向量库 + DeepSeek 聊天 + 本地化向量提取
 config = {
     "vector_store": {
         "provider": "qdrant",
@@ -53,15 +52,16 @@ config = {
 }
 memory = Memory.from_config(config)
 
-# ======= 接下来的代码保留原样（除了要删掉那个 if 判断）========
-# 注意：因为我们把 if openai_api_key: 这个判断删掉了，
-# 所以下面原来的所有代码，你需要全部【往左缩进一个 Tab】，取消掉原来的缩进！
+# ==========================================
+# 4. 前端 UI 与业务流转逻辑
+# ==========================================
 
-    # Sidebar for username and memory view
+# --- 侧边栏：用户身份认证与记忆查看 ---
 st.sidebar.title("Enter your username:")
 previous_user_id = st.session_state.get("previous_user_id", None)
 user_id = st.sidebar.text_input("Enter your Username")
 
+# 切换用户时清空当前屏幕的聊天记录
 if user_id != previous_user_id:
     st.session_state.messages = []
     st.session_state.previous_user_id = user_id
@@ -69,7 +69,7 @@ if user_id != previous_user_id:
 # Sidebar option to show memory
 st.sidebar.title("Memory Info")
 if st.button("View My Memory"):
-    memories = memory.get_all(user_id=user_id)
+    memories = memory.get_all(filters={"user_id": user_id})
     if memories and "results" in memories:
         st.write(f"Memory history for **{user_id}**:")
         for mem in memories["results"]:
@@ -99,7 +99,8 @@ if prompt and user_id:
         st.markdown(prompt)
 
     # Retrieve relevant memories
-    relevant_memories = memory.search(query=prompt, user_id=user_id)
+    # 新版的 mem0ai 里，搜索记忆时不能直接把 user_id 扔进去，而是必须把它包装在一个 filters（过滤器）字典里。
+    relevant_memories = memory.search(query=prompt, filters={"user_id": user_id})
     context = "Relevant past information:\n"
     if relevant_memories and "results" in relevant_memories:
         for mem in relevant_memories["results"]:
@@ -128,4 +129,4 @@ if prompt and user_id:
     memory.add(prompt, user_id=user_id, metadata={"role": "user"})
     memory.add(answer, user_id=user_id, metadata={"role": "assistant"})
 elif not user_id:
-    st.error("Please enter a username to start the chat.")
+    st.error("⚠️ 请先在左侧侧边栏输入您的用户名，然后才能开始聊天哦！")
