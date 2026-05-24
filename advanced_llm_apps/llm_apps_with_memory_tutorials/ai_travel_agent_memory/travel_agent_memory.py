@@ -42,6 +42,13 @@ config = {
             "model": "deepseek-chat", # 告诉 Mem0 用 DeepSeek 来提取记忆
             "temperature": 0.1
         }
+    },
+    # 【新增这一块】：强制指定 Mem0 使用 HuggingFace 的本地模型来计算向量
+    "embedder": {
+        "provider": "huggingface",
+        "config": {
+            "model": "sentence-transformers/all-MiniLM-L6-v2"
+        }
     }
 }
 memory = Memory.from_config(config)
