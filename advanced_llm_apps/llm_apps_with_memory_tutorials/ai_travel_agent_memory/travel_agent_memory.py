@@ -31,6 +31,7 @@ config = {
     "vector_store": {
         "provider": "qdrant",
         "config": {
+            "collection_name": "travel_memories_384",  # <--- 【加上这一行！】给新仓库起个专属名字
             "host": "124.220.72.84",  # <--- 你的腾讯云公网 IP
             "port": 6333,
         }
