@@ -34,6 +34,7 @@ config = {
             "collection_name": "travel_memories_384",  # <--- 【加上这一行！】给新仓库起个专属名字
             "host": "124.220.72.84",  # <--- 你的腾讯云公网 IP
             "port": 6333,
+            "embedding_model_dims": 384  # <--- 【关键修复！】强行锁定数据库维度为 384
         }
     },
     "llm": {
