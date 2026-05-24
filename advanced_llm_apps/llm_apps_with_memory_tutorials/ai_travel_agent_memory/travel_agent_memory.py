@@ -75,9 +75,9 @@ memory = Memory.from_config(config)
 # ==========================================
 
 # --- 侧边栏：用户身份认证与记忆查看 ---
-st.sidebar.title("Enter your username:")
+st.sidebar.title("请输入你的用户名:")
 previous_user_id = st.session_state.get("previous_user_id", None)
-user_id = st.sidebar.text_input("Enter your Username")
+user_id = st.sidebar.text_input("用户名")
 
 # 切换用户时清空当前屏幕的聊天记录
 if user_id != previous_user_id:
@@ -85,15 +85,15 @@ if user_id != previous_user_id:
     st.session_state.previous_user_id = user_id
 
 # --- 侧边栏：查看记忆按钮 ---
-st.sidebar.title("Memory Info")
+st.sidebar.title("记忆点")
 # 1. 把按钮放到侧边栏
-if st.sidebar.button("View My Memory"):
+if st.sidebar.button("查看我的记忆点"):
     # 2. 只有点击了按钮，才去判断有没有填用户名
     if user_id: 
         memories = memory.get_all(filters={"user_id": user_id})
         # 3. 安全提取记忆结果
         if memories and "results" in memories and len(memories["results"]) > 0:
-            st.sidebar.write(f"Memory history for **{user_id}**:")
+            st.sidebar.write(f"关于**{user_id}**的历史记忆:")
             for mem in memories["results"]:
                 if "memory" in mem:
                     # 用 success 的绿色框展示记忆，视觉效果更好
@@ -159,6 +159,6 @@ if prompt and user_id:
         prompt=chinese_prompt  # <--- 秘密武器：在这里把中文指令传给它！
     )
     print("【后台提炼的用户记忆】:", user_mem)
-    
+
 elif not user_id:
     st.error("⚠️ 请先在左侧侧边栏输入您的用户名，然后才能开始聊天哦！")
