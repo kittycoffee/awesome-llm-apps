@@ -29,9 +29,20 @@ client = OpenAI(
     base_url=os.environ["OPENAI_BASE_URL"] # <--- 这里也要跟着改成 BASE_URL
 )
 
+# 专门为旅行助理定制的中文记忆提取 Prompt
+chinese_prompt = """
+你是一个专业的中文旅行记忆提取专家。
+请从用户的输入中，提取出关于用户的关键客观事实（如：身份、饮食偏好、过敏史、喜欢的景点类型、预算限制等）。
+【严格禁止】：不要记录任何关于行程推荐、景点介绍或导游回复的内容。
+【语言要求】：请务必使用**中文**进行总结，语言要简练客观，例如“用户不喜欢吃香菜”。
+如果没有值得记忆的个人信息，请直接返回空。
+"""
 
 # 终极混合架构：云端向量库 + DeepSeek 聊天 + 本地化向量提取
 config = {
+    # 【新增这一行】：强行覆盖它的默认英文系统提示词
+    "custom_prompt": chinese_prompt,
+
     "vector_store": {
         "provider": "qdrant",
         "config": {
@@ -138,11 +149,16 @@ if prompt and user_id:
     with st.chat_message("assistant"):
         st.markdown(answer)
 
-    # Store the user query and AI response in memory
-    memory.add(prompt, user_id=user_id, metadata={"role": "user"})
-    # Store the user query and AI response in memory
-    user_mem = memory.add(prompt, user_id=user_id, metadata={"role": "user"})
-    print("【后台提炼的用户记忆】:", user_mem)  # <--- 在你的 VS Code 终端里打印出来看看！
-    memory.add(answer, user_id=user_id, metadata={"role": "assistant"})
+   # ==========================================
+    # 核心优化：只对用户的输入进行记忆提炼，并强行注入中文 Prompt
+    # ==========================================
+    user_mem = memory.add(
+        prompt,  # 只喂给它用户说的话，不要喂 answer！
+        user_id=user_id, 
+        metadata={"role": "user"},
+        prompt=chinese_prompt  # <--- 秘密武器：在这里把中文指令传给它！
+    )
+    print("【后台提炼的用户记忆】:", user_mem)
+    
 elif not user_id:
     st.error("⚠️ 请先在左侧侧边栏输入您的用户名，然后才能开始聊天哦！")
