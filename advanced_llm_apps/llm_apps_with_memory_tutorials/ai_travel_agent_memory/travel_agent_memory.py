@@ -13,6 +13,9 @@ load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("DEEPSEEK_API_KEY") 
 os.environ["OPENAI_API_BASE"] = "https://api.deepseek.com/v1"
 
+# 【🌟 新增这一行：解决 HuggingFace 下载模型 SSL 断连崩溃问题】
+os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
+
 # Set up the Streamlit App
 st.title("AI Travel Agent with Memory 🧳")
 st.caption("基于 DeepSeek 和云端 Qdrant 的智能记忆旅行代理。")
@@ -41,7 +44,10 @@ config = {
         "provider": "openai",
         "config": {
             "model": "deepseek-chat", # 告诉 Mem0 用 DeepSeek 来提取记忆
-            "temperature": 0.1
+            "temperature": 0.1,
+            # 【🌟 新增下面这两行：强行按着 Mem0 的头连向 DeepSeek】
+            "openai_base_url": "https://api.deepseek.com/v1",
+            "openai_api_key": os.environ["OPENAI_API_KEY"]
         }
     },
     # 【新增这一块】：强制指定 Mem0 使用 HuggingFace 的本地模型来计算向量
@@ -135,6 +141,9 @@ if prompt and user_id:
 
     # Store the user query and AI response in memory
     memory.add(prompt, user_id=user_id, metadata={"role": "user"})
+    # Store the user query and AI response in memory
+    user_mem = memory.add(prompt, user_id=user_id, metadata={"role": "user"})
+    print("【后台提炼的用户记忆】:", user_mem)  # <--- 在你的 VS Code 终端里打印出来看看！
     memory.add(answer, user_id=user_id, metadata={"role": "assistant"})
 elif not user_id:
     st.error("⚠️ 请先在左侧侧边栏输入您的用户名，然后才能开始聊天哦！")
