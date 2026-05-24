@@ -11,7 +11,7 @@ load_dotenv()
 # 这样不仅是你自己的代码，连 Mem0 在后台都会被迫乖乖使用 DeepSeek
 # ==========================================
 os.environ["OPENAI_API_KEY"] = os.getenv("DEEPSEEK_API_KEY") 
-os.environ["OPENAI_API_BASE"] = "https://api.deepseek.com/v1"
+os.environ["OPENAI_BASE_URL"] = "https://api.deepseek.com/v1" # <--- 注意这里！把 API_BASE 改成了 BASE_URL
 
 # 【🌟 新增这一行：解决 HuggingFace 下载模型 SSL 断连崩溃问题】
 os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
@@ -25,7 +25,8 @@ st.caption("基于 DeepSeek 和云端 Qdrant 的智能记忆旅行代理。")
 # ==========================================
 client = OpenAI(
     api_key=os.environ["OPENAI_API_KEY"],
-    base_url=os.environ["OPENAI_API_BASE"]
+    # 最新版的 OpenAI 官方库中，用来修改网址的环境变量已经从以前的 OPENAI_API_BASE 悄悄改成了 OPENAI_BASE_URL
+    base_url=os.environ["OPENAI_BASE_URL"] # <--- 这里也要跟着改成 BASE_URL
 )
 
 
@@ -45,9 +46,7 @@ config = {
         "config": {
             "model": "deepseek-chat", # 告诉 Mem0 用 DeepSeek 来提取记忆
             "temperature": 0.1,
-            # 【🌟 新增下面这两行：强行按着 Mem0 的头连向 DeepSeek】
-            "openai_base_url": "https://api.deepseek.com/v1",
-            "openai_api_key": os.environ["OPENAI_API_KEY"]
+    
         }
     },
     # 【新增这一块】：强制指定 Mem0 使用 HuggingFace 的本地模型来计算向量
