@@ -2,12 +2,15 @@ import streamlit as st
 from openai import OpenAI
 from mem0 import Memory
 import os
+from dotenv import load_dotenv # 导入 dotenv
 
+# 加载 .env 文件里的环境变量
+load_dotenv()
 # ==========================================
 # 核心魔改 1：全局环境变量劫持 (非常重要)
 # 这样不仅是你自己的代码，连 Mem0 在后台都会被迫乖乖使用 DeepSeek
 # ==========================================
-os.environ["OPENAI_API_KEY"] = "sk-你的DeepSeek真实密钥写在这里" 
+os.environ["OPENAI_API_KEY"] = os.getenv("DEEPSEEK_API_KEY") 
 os.environ["OPENAI_API_BASE"] = "https://api.deepseek.com/v1"
 
 # Set up the Streamlit App
